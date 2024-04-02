@@ -1,7 +1,8 @@
-version: "3"
+version: "3.5"
 
 services:
   mysql:
+    networks: [default]
     platform: linux/x86_64
     image: mysql:5.7
     restart: always
@@ -11,16 +12,29 @@ services:
       MYSQL_PASSWORD: root
     ports:
       - "3306:3306"
-    volumes:
-      - "./scripts/sql/init.up.sql:/docker-entrypoint-initdb.d/1.sql"
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 10s
+      retries: 10
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 
   goapi:
-    build: .
+    networks: [default]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    image: cristovaoolegario/tasks-api:latest
+    environment:
+      DB_PASSWORD: root
+      DB_NAME: tasks
+      DB_USER: root
     ports:
-      - "8080:8080"
-    volumes:
-      - .:/go/api
+      - "3000:3000"
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
+
+networks:
+  default:
+    driver: bridge
+    name: sword-network
