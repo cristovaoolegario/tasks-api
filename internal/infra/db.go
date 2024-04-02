@@ -24,14 +24,7 @@ type Task struct {
 	UserID        uint      // Foreign key for User
 }
 
-func InitDB() *gorm.DB {
-	// Read from config files
-	dbUsername := "root"
-	dbPassword := "root"
-	dbHost := "host.docker.internal"
-	dbName := "tasks"
-	connectionString := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", dbUsername, dbPassword, dbHost, dbName)
-
+func InitDB(connectionString string) *gorm.DB {
 	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
