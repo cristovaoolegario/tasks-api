@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  mysql:
+    platform: linux/x86_64
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: tasks
+      MYSQL_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - "./scripts/sql/init.up.sql:/docker-entrypoint-initdb.d/1.sql"
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  goapi:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/go/api
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
