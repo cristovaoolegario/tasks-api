@@ -2,35 +2,31 @@ package controller
 
 import (
 	"github.com/cristovaoolegario/tasks-api/internal/auth"
-	"github.com/cristovaoolegario/tasks-api/internal/infra/repository"
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type LoginController struct {
-	userRepo    repository.UserRepository
 	authService *auth.Service
 }
 
-func NewLoginController(
-	userRepo repository.UserRepository,
-	authService *auth.Service) *LoginController {
+func NewLoginController(authService *auth.Service) *LoginController {
 	return &LoginController{
-		userRepo:    userRepo,
 		authService: authService,
 	}
 }
 
-func (s *LoginController) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	username := r.FormValue("username")
-	password := r.FormValue("password")
+func (s *LoginController) LoginHandler(c *gin.Context) {
+	username := c.PostForm("username")
+	password := c.PostForm("password")
 
 	token, err := s.authService.Login(username, password)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		c.Abort()
 		return
 	}
 
-	w.Write([]byte(token))
-	return
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }

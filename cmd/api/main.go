@@ -1,11 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"github.com/cristovaoolegario/tasks-api/internal/auth"
 	"github.com/cristovaoolegario/tasks-api/internal/config"
 	"github.com/cristovaoolegario/tasks-api/internal/controller"
+	"github.com/cristovaoolegario/tasks-api/internal/domain/service"
 	mysql "github.com/cristovaoolegario/tasks-api/internal/infra/db/mysql"
+	"github.com/gin-gonic/gin"
 	"github.com/heptiolabs/healthcheck"
 	"net/http"
 	"time"
@@ -23,23 +24,27 @@ func main() {
 	}
 	defer db.Close()
 
-	repo := mysql.NewUserRepository(dbConnect)
-	authService := auth.NewAuthService(cfg.AuthSecret, repo)
-	loginController := controller.NewLoginController(repo, authService)
+	userRepo := mysql.NewUserRepository(dbConnect)
+	userService := service.NewUserService(userRepo)
+	authService := auth.NewAuthService(cfg.AuthSecret, userRepo)
+	loginController := controller.NewLoginController(authService)
+	userController := controller.NewUserController(userService)
 
-	//newUser := &model.User{Username: "newuser", Role: "manager", Password: "securepassword"}
-	//err = repo.Create(newUser)
-	//if err != nil {
-	//	panic("failed to create user")
-	//}
+	router := gin.Default()
+
+	userRoutes := router.Group("/api/users",
+		auth.TokenAuthMiddleware(cfg.AuthSecret),
+		auth.RoleManagerMiddleware())
+	{
+		userRoutes.POST("", userController.CreateUser)
+		userRoutes.GET("/:username", userController.GetUser)
+	}
+
+	router.GET("/login", loginController.LoginHandler)
 
 	health := healthcheck.NewHandler()
 	health.AddReadinessCheck("database", healthcheck.DatabasePingCheck(db, 1*time.Second))
-
-	fmt.Println("Ready! Listing on port", cfg.AppPort)
-
-	http.HandleFunc("/login", loginController.LoginHandler)
 	go http.ListenAndServe(":8086", health)
 
-	http.ListenAndServe(cfg.AppPort, nil)
+	router.Run(cfg.AppPort)
 }

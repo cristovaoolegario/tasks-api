@@ -53,7 +53,7 @@ func (s *Service) Login(username, password string) (string, error) {
 	}
 
 	if verifyPassword(user.Password, password) {
-		tokenString, err := s.GenerateJWT(username, "manager")
+		tokenString, err := s.GenerateJWT(username, string(user.Role))
 		if err != nil {
 			return "", errors.New("error generating token")
 		}
