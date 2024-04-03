@@ -30,9 +30,11 @@ services:
       DB_NAME: tasks
       DB_USER: root
       LOCAL_CONTAINER: true
+      JWT_SECRET: F1cXGpFszE6VaKkqx7Ehnoa8WK3X+YY9EA4Ulz5C4XMfxWWXbIipGFgARbRnRLyaM+TgVm0A8PJCaSoktAzKvg==
       PORT: ":3000"
     ports:
       - "3000:3000"
+      - "8086:8086"
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 

@@ -2,30 +2,44 @@ package main
 
 import (
 	"fmt"
+	"github.com/cristovaoolegario/tasks-api/internal/auth"
 	"github.com/cristovaoolegario/tasks-api/internal/config"
-	"github.com/cristovaoolegario/tasks-api/internal/infra"
+	"github.com/cristovaoolegario/tasks-api/internal/controller"
+	mysql "github.com/cristovaoolegario/tasks-api/internal/infra/db/mysql"
 	"github.com/heptiolabs/healthcheck"
 	"net/http"
 	"time"
 )
 
 func main() {
-	cfg := config.LoadConfig()
-	dbConnect := infra.InitDB(cfg.DbConnection)
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
+	dbConnect := mysql.InitDB(cfg.DbConnection)
 	db, err := dbConnect.DB()
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
 
-	// Create a new health check handler
-	health := healthcheck.NewHandler()
+	repo := mysql.NewUserRepository(dbConnect)
+	authService := auth.NewAuthService(cfg.AuthSecret, repo)
+	loginController := controller.NewLoginController(repo, authService)
 
-	// Register health checks for any dependencies
-	// Serve http://0.0.0.0:3000/live and http://0.0.0.0:3000/ready endpoints.
+	//newUser := &model.User{Username: "newuser", Role: "manager", Password: "securepassword"}
+	//err = repo.Create(newUser)
+	//if err != nil {
+	//	panic("failed to create user")
+	//}
+
+	health := healthcheck.NewHandler()
 	health.AddReadinessCheck("database", healthcheck.DatabasePingCheck(db, 1*time.Second))
 
-	fmt.Printf("Ready! Listing on port %s", cfg.AppPort)
+	fmt.Println("Ready! Listing on port", cfg.AppPort)
 
-	http.ListenAndServe(cfg.AppPort, health)
+	http.HandleFunc("/login", loginController.LoginHandler)
+	go http.ListenAndServe(":8086", health)
+
+	http.ListenAndServe(cfg.AppPort, nil)
 }
