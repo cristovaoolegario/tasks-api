@@ -2,6 +2,7 @@ package auth
 
 import (
 	"github.com/cristovaoolegario/tasks-api/internal/domain/model"
+	"github.com/cristovaoolegario/tasks-api/internal/domain/service"
 	"github.com/cristovaoolegario/tasks-api/internal/infra/repository"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/assert"
@@ -12,7 +13,7 @@ import (
 
 func TestService_GenerateJWT(t *testing.T) {
 	secret := "testing-secret"
-	service := NewAuthService(secret, &repository.MockUserRepository{})
+	service := NewAuthService(secret, service.NewUserService(&repository.MockUserRepository{}))
 
 	username := "testUser"
 	role := "technician"
@@ -59,7 +60,7 @@ func TestService_Login(t *testing.T) {
 	mockRepo.Users[1] = mockUser
 
 	service := &Service{
-		repo: mockRepo,
+		userService: service.NewUserService(mockRepo),
 	}
 
 	t.Run("Should return a token When login is valid", func(t *testing.T) {

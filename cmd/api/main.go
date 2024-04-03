@@ -26,7 +26,7 @@ func main() {
 
 	userRepo := mysql.NewUserRepository(dbConnect)
 	userService := service.NewUserService(userRepo)
-	authService := auth.NewAuthService(cfg.AuthSecret, userRepo)
+	authService := auth.NewAuthService(cfg.AuthSecret, userService)
 	loginController := controller.NewLoginController(authService)
 	userController := controller.NewUserController(userService)
 

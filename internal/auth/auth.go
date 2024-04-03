@@ -2,7 +2,7 @@ package auth
 
 import (
 	"errors"
-	"github.com/cristovaoolegario/tasks-api/internal/infra/repository"
+	"github.com/cristovaoolegario/tasks-api/internal/domain/service"
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 	"time"
@@ -10,14 +10,14 @@ import (
 
 // Service used to authenticate users
 type Service struct {
-	secret string
-	repo   repository.UserRepository
+	secret      string
+	userService service.UserService
 }
 
-func NewAuthService(secret string, userRepository repository.UserRepository) *Service {
+func NewAuthService(secret string, userService service.UserService) *Service {
 	return &Service{
-		secret: secret,
-		repo:   userRepository,
+		secret:      secret,
+		userService: userService,
 	}
 }
 
@@ -46,7 +46,7 @@ func (s *Service) GenerateJWT(user, role string) (string, error) {
 
 // Login validates username and password and gets a valid token
 func (s *Service) Login(username, password string) (string, error) {
-	user, err := s.repo.FindByUsername(username)
+	user, err := s.userService.FindByUsername(username)
 
 	if err != nil {
 		return "", errors.New("invalid username or password")
