@@ -2,23 +2,29 @@ package auth
 
 import (
 	"github.com/cristovaoolegario/tasks-api/internal/domain/model"
+	"github.com/gin-gonic/gin"
 )
 
 // MockAuthService is a mock implementation of the AuthService interface.
 type MockAuthService struct {
-	GenerateJWTFunc  func(user, role string) (string, error)
-	LoginFunc        func(username, password string) (string, error)
-	FindByUsernameFn func(username string) (*model.User, error)
+	GenerateJWTMock              func(user, role, id string) (string, error)
+	LoginMock                    func(username, password string) (string, error)
+	FindByUsernameMock           func(username string) (*model.User, error)
+	ExtractUserIdFromContextMock func(ctx *gin.Context) (uint, error)
 }
 
-func (m *MockAuthService) GenerateJWT(user, role string) (string, error) {
-	return m.GenerateJWTFunc(user, role)
+func (m *MockAuthService) GenerateJWT(user, role, id string) (string, error) {
+	return m.GenerateJWTMock(user, role, id)
 }
 
 func (m *MockAuthService) Login(username, password string) (string, error) {
-	return m.LoginFunc(username, password)
+	return m.LoginMock(username, password)
 }
 
 func (m *MockAuthService) FindByUsername(username string) (*model.User, error) {
-	return m.FindByUsernameFn(username)
+	return m.FindByUsernameMock(username)
+}
+
+func (m *MockAuthService) ExtractUserIdFromContext(ctx *gin.Context) (uint, error) {
+	return m.ExtractUserIdFromContextMock(ctx)
 }

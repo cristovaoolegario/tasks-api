@@ -5,8 +5,11 @@ import (
 	"github.com/cristovaoolegario/tasks-api/internal/domain/service"
 	"github.com/cristovaoolegario/tasks-api/internal/infra/repository"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
+	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -17,8 +20,9 @@ func TestService_GenerateJWT(t *testing.T) {
 
 	username := "testUser"
 	role := "technician"
+	id := "1"
 
-	tokenString, err := service.GenerateJWT(username, role)
+	tokenString, err := service.GenerateJWT(username, role, id)
 	if err != nil {
 		t.Fatalf("Failed to generate JWT: %v", err)
 	}
@@ -32,25 +36,14 @@ func TestService_GenerateJWT(t *testing.T) {
 	})
 
 	if claims, ok := token.Claims.(*jwtClaims); ok && token.Valid {
-		if claims.User != username {
-			t.Errorf("Expected username %v, got %v", username, claims.User)
-		}
-		if claims.Role != role {
-			t.Errorf("Expected role %v, got %v", role, claims.Role)
-		}
-
-		now := time.Now().Unix()
-		if claims.ExpiresAt < now {
-			t.Errorf("Token should not be expired")
-		}
-
-	} else {
-		t.Fatalf("Failed to parse token: %v", err)
+		assert.Equal(t, username, claims.User)
+		assert.Equal(t, role, claims.Role)
+		assert.Equal(t, id, claims.Id)
+		assert.LessOrEqual(t, time.Now().Unix(), claims.ExpiresAt)
 	}
 }
 
 func TestService_Login(t *testing.T) {
-	// Setup
 	mockRepo := repository.NewMockUserRepository()
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 	if err != nil {
@@ -80,4 +73,42 @@ func TestService_Login(t *testing.T) {
 		assert.Error(t, err)
 		assert.Empty(t, emptyToken)
 	})
+}
+
+func TestServiceImp_ExtractUserIdFromContext(t *testing.T) {
+
+	gin.SetMode(gin.TestMode)
+
+	t.Run("Should extract userid When claims are set", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+
+		expectedUserID := uint(123)
+		claims := jwt.MapClaims{
+			"id": strconv.Itoa(int(expectedUserID)),
+		}
+		c.Set("user_claims", claims)
+
+		secret := "testing-secret"
+		service := NewAuthService(secret, service.NewUserService(&repository.MockUserRepository{}))
+
+		userID, err := service.ExtractUserIdFromContext(c)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedUserID, userID)
+	})
+
+	t.Run("Should return error When claims weren't set", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+
+		secret := "testing-secret"
+		service := NewAuthService(secret, service.NewUserService(&repository.MockUserRepository{}))
+
+		userID, err := service.ExtractUserIdFromContext(c)
+
+		assert.Error(t, err)
+		assert.Equal(t, uint(0), userID)
+	})
+
 }

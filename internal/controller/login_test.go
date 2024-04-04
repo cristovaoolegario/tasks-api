@@ -16,7 +16,7 @@ func TestLoginHandler(t *testing.T) {
 	t.Run("Should return 200 and token", func(t *testing.T) {
 		loginController := controller.NewLoginController(
 			&auth.MockAuthService{
-				LoginFunc: func(username, password string) (string, error) {
+				LoginMock: func(username, password string) (string, error) {
 					return "mocked_token", nil
 				},
 			})
@@ -38,7 +38,7 @@ func TestLoginHandler(t *testing.T) {
 	t.Run("Should return 401", func(t *testing.T) {
 		loginController := controller.NewLoginController(
 			&auth.MockAuthService{
-				LoginFunc: func(username, password string) (string, error) {
+				LoginMock: func(username, password string) (string, error) {
 					return "", errors.New("some error")
 				},
 			})

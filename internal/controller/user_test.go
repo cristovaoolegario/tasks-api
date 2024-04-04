@@ -15,32 +15,31 @@ import (
 )
 
 func TestUserController(t *testing.T) {
-
 	repository := repository.NewMockUserRepository()
 	service := service.NewUserService(repository)
 	userController := NewUserController(service)
 
 	t.Run("Should return 201 When able to create user", func(t *testing.T) {
-		w := performRequest(userController.CreateUser, http.MethodPost, "/users", "", model.User{Role: model.Manager, Username: "new_user", Password: "test_password"})
+		w := performRequest(userController.CreateUser, http.MethodPost, "/users", "", "", model.User{Role: model.Manager, Username: "new_user", Password: "test_password"})
 
 		assert.Equal(t, http.StatusCreated, w.Code)
 	})
 
 	t.Run("Should return 200 and user When user exists", func(t *testing.T) {
-		w := performRequest(userController.GetUser, http.MethodGet, "/users", "new_user", nil)
+		w := performRequest(userController.GetUser, http.MethodGet, "/users", "new_user", "", nil)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 	})
 
 	t.Run("Should return 404 When user doesn't exists", func(t *testing.T) {
-		w := performRequest(userController.GetUser, http.MethodGet, "/users", "no_existing_user", nil)
+		w := performRequest(userController.GetUser, http.MethodGet, "/users", "no_existing_user", "", nil)
 
 		assert.Equal(t, http.StatusNotFound, w.Code)
 	})
 
 }
 
-func performRequest(handlerFunc gin.HandlerFunc, method, path, username string, body interface{}) *httptest.ResponseRecorder {
+func performRequest(handlerFunc gin.HandlerFunc, method, path, username, id string, body interface{}) *httptest.ResponseRecorder {
 	var reqBody []byte
 	if body != nil {
 		var err error
@@ -53,8 +52,12 @@ func performRequest(handlerFunc gin.HandlerFunc, method, path, username string, 
 	req, _ := http.NewRequest(method, path, bytes.NewReader(reqBody))
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
+
 	if username != "" {
 		c.AddParam("username", username)
+	}
+	if id != "" {
+		c.AddParam("id", id)
 	}
 	c.Request = req
 

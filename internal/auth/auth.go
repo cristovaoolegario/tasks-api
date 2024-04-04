@@ -4,13 +4,16 @@ import (
 	"errors"
 	"github.com/cristovaoolegario/tasks-api/internal/domain/service"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"strconv"
 	"time"
 )
 
 type Service interface {
-	GenerateJWT(user, role string) (string, error)
+	GenerateJWT(user, role, id string) (string, error)
 	Login(username, password string) (string, error)
+	ExtractUserIdFromContext(ctx *gin.Context) (uint, error)
 }
 
 // ServiceImp used to authenticate users
@@ -29,15 +32,17 @@ func NewAuthService(secret string, userService service.UserService) *ServiceImp 
 type jwtClaims struct {
 	User string `json:"username"`
 	Role string `json:"role"`
+	Id   string `json:"id"`
 	jwt.StandardClaims
 }
 
 // GenerateJWT generates a new JWT token
-func (s *ServiceImp) GenerateJWT(user, role string) (string, error) {
-	expirationTime := time.Now().Add(5 * time.Minute)
+func (s *ServiceImp) GenerateJWT(user, role, id string) (string, error) {
+	expirationTime := time.Now().Add(5 * time.Hour)
 	claims := &jwtClaims{
 		User: user,
 		Role: role,
+		Id:   id,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
@@ -58,7 +63,7 @@ func (s *ServiceImp) Login(username, password string) (string, error) {
 	}
 
 	if verifyPassword(user.Password, password) {
-		tokenString, err := s.GenerateJWT(username, string(user.Role))
+		tokenString, err := s.GenerateJWT(username, string(user.Role), strconv.Itoa(int(user.ID)))
 		if err != nil {
 			return "", errors.New("error generating token")
 		}
@@ -70,4 +75,23 @@ func (s *ServiceImp) Login(username, password string) (string, error) {
 func verifyPassword(hashedPassword, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil
+}
+
+func (s *ServiceImp) ExtractUserIdFromContext(ctx *gin.Context) (uint, error) {
+	claimsRaw, exists := ctx.Get("user_claims")
+	if !exists {
+		return 0, errors.New("no user id claim")
+	}
+
+	claims, ok := claimsRaw.(jwt.MapClaims)
+	if !ok {
+		return 0, errors.New("no user id claim")
+	}
+	id, ok := claims["id"].(string)
+
+	if !ok {
+		return 0, errors.New("no user id claim")
+	}
+	userId, _ := strconv.Atoi(id)
+	return uint(userId), nil
 }

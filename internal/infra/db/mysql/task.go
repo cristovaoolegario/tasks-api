@@ -42,3 +42,12 @@ func (repo *TaskRepository) Delete(id uint) error {
 	result := repo.db.Delete(&model.Task{}, id)
 	return result.Error
 }
+
+// FindByUser retrieves tasks for a specific user ID.
+func (repo *TaskRepository) FindByUser(userID uint) ([]*model.Task, error) {
+	var tasks []*model.Task
+	if err := repo.db.Where("user_id = ?", userID).Find(&tasks).Error; err != nil {
+		return nil, err
+	}
+	return tasks, nil
+}

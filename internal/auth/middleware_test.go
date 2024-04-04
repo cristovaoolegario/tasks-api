@@ -19,7 +19,7 @@ func TestTokenAuthMiddleware(t *testing.T) {
 	})
 
 	t.Run("Should return status OK When token is valid", func(t *testing.T) {
-		validToken, _ := NewAuthService(secret, nil).GenerateJWT("new user", "manager")
+		validToken, _ := NewAuthService(secret, nil).GenerateJWT("new user", "manager", "1")
 
 		req := httptest.NewRequest("GET", "/protected", nil)
 		req.Header.Set("Authorization", "Bearer "+validToken)
@@ -56,7 +56,7 @@ func TestRoleManagerMiddleware(t *testing.T) {
 	})
 
 	t.Run("Should return status OK When the role is manager", func(t *testing.T) {
-		validToken, _ := NewAuthService(secret, nil).GenerateJWT("new user", "manager")
+		validToken, _ := NewAuthService(secret, nil).GenerateJWT("new user", "manager", "1")
 		req := httptest.NewRequest("GET", "/manager-protected", nil)
 		req.Header.Set("Authorization", "Bearer "+validToken)
 		w := httptest.NewRecorder()
@@ -65,7 +65,7 @@ func TestRoleManagerMiddleware(t *testing.T) {
 	})
 
 	t.Run("Should return status StatusForbidden When the role is technician", func(t *testing.T) {
-		validToken, _ := NewAuthService(secret, nil).GenerateJWT("new user", "technician")
+		validToken, _ := NewAuthService(secret, nil).GenerateJWT("new user", "technician", "1")
 		req := httptest.NewRequest("GET", "/manager-protected", nil)
 		req.Header.Set("Authorization", "Bearer "+validToken)
 		w := httptest.NewRecorder()

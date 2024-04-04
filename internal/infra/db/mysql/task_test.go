@@ -1,12 +1,10 @@
 package mysql
 
 import (
+	"github.com/cristovaoolegario/tasks-api/internal/domain/model"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 	"testing"
-	"time"
-
-	"github.com/cristovaoolegario/tasks-api/internal/domain/model"
 )
 
 func TestTaskRepository(t *testing.T) {
@@ -25,9 +23,8 @@ func TestTaskRepository(t *testing.T) {
 
 	t.Run("Should create task when valid", func(t *testing.T) {
 		task := &model.Task{
-			UserID:        1,
-			Summary:       "Do something",
-			PerformedDate: time.Now(),
+			UserID:  1,
+			Summary: "Do something",
 		}
 
 		err = repo.Create(task)
@@ -43,10 +40,9 @@ func TestTaskRepository(t *testing.T) {
 
 	t.Run("Should update existing task", func(t *testing.T) {
 		testTask := &model.Task{
-			Model:         gorm.Model{ID: 1},
-			UserID:        1,
-			Summary:       "Do something",
-			PerformedDate: time.Now(),
+			Model:   gorm.Model{ID: 1},
+			UserID:  1,
+			Summary: "Do something",
 		}
 
 		err = repo.Update(testTask)
