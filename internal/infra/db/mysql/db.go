@@ -8,9 +8,7 @@ import (
 )
 
 func InitDB(connectionString string) *gorm.DB {
-	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{
-		DisableForeignKeyConstraintWhenMigrating: true,
-	})
+	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
 	if err != nil {
 		fmt.Println(err)
 		panic("failed to connect database")
