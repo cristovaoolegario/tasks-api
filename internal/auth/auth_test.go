@@ -59,7 +59,7 @@ func TestService_Login(t *testing.T) {
 	mockUser := &model.User{Username: "testuser", Password: string(hashedPassword)}
 	mockRepo.Users[1] = mockUser
 
-	service := &Service{
+	service := &ServiceImp{
 		userService: service.NewUserService(mockRepo),
 	}
 

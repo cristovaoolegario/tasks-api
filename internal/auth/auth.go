@@ -8,14 +8,19 @@ import (
 	"time"
 )
 
-// Service used to authenticate users
-type Service struct {
+type Service interface {
+	GenerateJWT(user, role string) (string, error)
+	Login(username, password string) (string, error)
+}
+
+// ServiceImp used to authenticate users
+type ServiceImp struct {
 	secret      string
 	userService service.UserService
 }
 
-func NewAuthService(secret string, userService service.UserService) *Service {
-	return &Service{
+func NewAuthService(secret string, userService service.UserService) *ServiceImp {
+	return &ServiceImp{
 		secret:      secret,
 		userService: userService,
 	}
@@ -28,7 +33,7 @@ type jwtClaims struct {
 }
 
 // GenerateJWT generates a new JWT token
-func (s *Service) GenerateJWT(user, role string) (string, error) {
+func (s *ServiceImp) GenerateJWT(user, role string) (string, error) {
 	expirationTime := time.Now().Add(5 * time.Minute)
 	claims := &jwtClaims{
 		User: user,
@@ -45,7 +50,7 @@ func (s *Service) GenerateJWT(user, role string) (string, error) {
 }
 
 // Login validates username and password and gets a valid token
-func (s *Service) Login(username, password string) (string, error) {
+func (s *ServiceImp) Login(username, password string) (string, error) {
 	user, err := s.userService.FindByUsername(username)
 
 	if err != nil {
