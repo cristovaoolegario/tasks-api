@@ -223,43 +223,6 @@ func TestTaskController_FindByID(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, w.Code)
 	})
 
-	t.Run("Should return 500 When UserId is not set in claims", func(t *testing.T) {
-		repo := repository.NewMockTaskRepository()
-		repo.Tasks = map[uint]*model.Task{
-			1: {Model: gorm.Model{ID: 1}},
-		}
-		mockAuth := &auth.MockAuthService{
-			ExtractUserIdFromContextMock: func(ctx *gin.Context) (uint, error) {
-				return 0, errors.New("test error")
-			}}
-		mockedService := service.NewTaskService(repo)
-		taskController := NewTaskController(mockedService, mockAuth, nil)
-
-		w := performRequest(taskController.FindByID, http.MethodGet, "/users", "", "1", nil)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-	})
-
-	t.Run("Should return 403 When user id is different than task's user ", func(t *testing.T) {
-		repo := repository.NewMockTaskRepository()
-		repo.Tasks = map[uint]*model.Task{
-			1: {
-				Model:  gorm.Model{ID: 1},
-				UserID: 3,
-			},
-		}
-		mockAuth := &auth.MockAuthService{
-			ExtractUserIdFromContextMock: func(ctx *gin.Context) (uint, error) {
-				return 1, nil
-			}}
-		mockedService := service.NewTaskService(repo)
-		taskController := NewTaskController(mockedService, mockAuth, nil)
-
-		w := performRequest(taskController.FindByID, http.MethodGet, "/users", "", "1", nil)
-
-		assert.Equal(t, http.StatusForbidden, w.Code)
-	})
-
 	t.Run("Should return 200 and task", func(t *testing.T) {
 		repo := repository.NewMockTaskRepository()
 		repo.Tasks = map[uint]*model.Task{

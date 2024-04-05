@@ -132,17 +132,6 @@ func (tc *TaskController) FindByID(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := tc.authService.ExtractUserIdFromContext(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{})
-		return
-	}
-
-	if task.UserID != userId {
-		ctx.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
-		return
-	}
-
 	ctx.JSON(http.StatusOK, &dto.Task{
 		ID:            task.ID,
 		Summary:       task.Summary,
