@@ -8,10 +8,9 @@ RUN go mod download
 
 # Copy source code
 COPY cmd ./cmd
-COPY pkg ./pkg
 COPY internal ./internal
 
-RUN go build -tags musl -o microservice ./cmd/api/main.go
+RUN go build -tags musl -o microservice ./cmd/api/rest/main.go
 
 FROM alpine:3.18.6
 WORKDIR /bin
