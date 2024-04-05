@@ -1,3 +1,7 @@
+[![Go](https://github.com/cristovaoolegario/tasks-api/actions/workflows/go.yml/badge.svg)](https://github.com/cristovaoolegario/tasks-api/actions/workflows/go.yml)
+![Codecov](https://img.shields.io/codecov/c/gh/cristovaoolegario/tasks-api)
+[![Go Report Card](https://goreportcard.com/badge/github.com/cristovaoolegario/tasks-api)](https://goreportcard.com/report/github.com/cristovaoolegario/tasks-api)
+
 # Tasks API
 
 ## Description

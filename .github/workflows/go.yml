@@ -33,8 +33,17 @@ jobs:
           ./configure --install-deps --enable-devel --disable-lz4-ext --prefix=/usr
           make
           sudo make install
+
       - name: Build
         run: go build -v ./...
+
       - name: Test
-        run: go test -v ./...
+        run: go test -v -coverprofile=coverage.txt ./...
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.txt
+          fail_ci_if_error: false
 
