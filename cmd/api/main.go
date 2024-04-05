@@ -32,8 +32,8 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	taskService := service.NewTaskService(taskRepo)
 	authService := auth.NewAuthService(cfg.AuthSecret, userService)
-	producer := kafka.NewProducerServiceImp("localhost:9092")
-	managerNotificationService := service.NewManagerNotificationService("managerNotification", producer)
+	producer := kafka.NewProducerServiceImp(cfg.BrokerHost)
+	managerNotificationService := service.NewManagerNotificationService(cfg.ManagerNotificationTopic, producer)
 
 	loginController := controller.NewLoginController(authService)
 	userController := controller.NewUserController(userService)
@@ -66,7 +66,7 @@ func main() {
 
 	health := healthcheck.NewHandler()
 	health.AddReadinessCheck("database", healthcheck.DatabasePingCheck(db, 1*time.Second))
-	go http.ListenAndServe(":8086", health)
+	go http.ListenAndServe(cfg.HealthCheckPort, health)
 
 	router.Run(cfg.AppPort)
 }

@@ -16,12 +16,18 @@ const (
 	DBName           = "DB_NAME"
 	IsLocalContainer = "LOCAL_CONTAINER"
 	AuthSecret       = "JWT_SECRET"
+	BrokerHost       = "BROKER_HOST"
+	ManagerTopic     = "MANAGER_NOTIFICATION_TOPIC"
+	HealthCheckPort  = "HEALTH_CHECK_PORT"
 )
 
 type Config struct {
-	DbConnection string
-	AppPort      string
-	AuthSecret   string
+	DbConnection             string
+	AppPort                  string
+	AuthSecret               string
+	BrokerHost               string
+	ManagerNotificationTopic string
+	HealthCheckPort          string
 }
 
 func LoadConfig() (*Config, error) {
@@ -33,9 +39,12 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &Config{
-		DbConnection: loadDBConfig(),
-		AppPort:      os.Getenv(Port),
-		AuthSecret:   secret,
+		DbConnection:             loadDBConfig(),
+		AppPort:                  os.Getenv(Port),
+		AuthSecret:               secret,
+		BrokerHost:               os.Getenv(BrokerHost),
+		ManagerNotificationTopic: os.Getenv(ManagerTopic),
+		HealthCheckPort:          os.Getenv(HealthCheckPort),
 	}, nil
 }
 
