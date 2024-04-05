@@ -9,13 +9,13 @@ import (
 
 func TestManagerNotificationService_Notification(t *testing.T) {
 	mockPublisher := &kafka.ProducerMock{
-		PublishMessageMock: func(topic, message string) error {
+		PublishMessageMock: func(topic string, message []byte) error {
 			return nil
 		},
 	}
 	service := NewManagerNotificationService("manager-notification", mockPublisher)
 
-	err := service.Notification("test-user", &dto.Task{})
+	err := service.Notification(1, &dto.Task{})
 
 	assert.NoError(t, err)
 

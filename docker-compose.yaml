@@ -41,6 +41,19 @@ services:
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 
+  kafka-consumer:
+    networks: [default]
+    depends_on:
+      - broker
+    image: cristovaoolegario/tasks-consumer:latest
+    environment:
+      BROKER_HOST: "broker:29092"
+      MANAGER_NOTIFICATION_TOPIC: "managerNotification"
+    ports:
+      - "5000:5000"
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.0
     hostname: zookeeper

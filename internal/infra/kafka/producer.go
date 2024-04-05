@@ -11,7 +11,7 @@ type ProducerServiceImp struct {
 }
 
 type ProducerService interface {
-	PublishMessage(topic, message string) error
+	PublishMessage(topic string, message []byte) error
 }
 
 func NewProducerServiceImp(bootstrapServers string) *ProducerServiceImp {
@@ -20,7 +20,7 @@ func NewProducerServiceImp(bootstrapServers string) *ProducerServiceImp {
 	}
 }
 
-func (s *ProducerServiceImp) PublishMessage(topic, message string) error {
+func (s *ProducerServiceImp) PublishMessage(topic string, message []byte) error {
 	producer, err := kafka.NewProducer(&kafka.ConfigMap{
 		BootStrapServers: s.BootstrapServers,
 	})
@@ -55,18 +55,4 @@ func (s *ProducerServiceImp) PublishMessage(topic, message string) error {
 	producer.Flush(15 * 1000)
 
 	return nil
-}
-
-func main() {
-	bootstrapServers := "localhost:9092"
-	topic := "test-topic"
-	message := "Hello, Kafka!"
-
-	service := NewProducerServiceImp(bootstrapServers)
-
-	if err := service.PublishMessage(topic, message); err != nil {
-		fmt.Printf("Failed to publish message: %v\n", err)
-	} else {
-		fmt.Println("Message published successfully")
-	}
 }

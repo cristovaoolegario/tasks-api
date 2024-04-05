@@ -1,13 +1,13 @@
 package service
 
 import (
-	"fmt"
+	"encoding/json"
 	"github.com/cristovaoolegario/tasks-api/internal/domain/dto"
 	"github.com/cristovaoolegario/tasks-api/internal/infra/kafka"
 )
 
 type ManagerNotificationService interface {
-	Notification(userId string, task *dto.Task) error
+	Notification(userId uint, task *dto.Task) error
 }
 
 type ManagerNotificationServiceImp struct {
@@ -22,7 +22,8 @@ func NewManagerNotificationService(topic string, publisher kafka.ProducerService
 	}
 }
 
-func (s *ManagerNotificationServiceImp) Notification(userId string, task *dto.Task) error {
-	message := fmt.Sprintf("User %s updated task %v", userId, task)
+func (s *ManagerNotificationServiceImp) Notification(userId uint, task *dto.Task) error {
+	task.UserID = userId
+	message, _ := json.Marshal(task)
 	return s.publisher.PublishMessage(s.topic, message)
 }

@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/cristovaoolegario/tasks-api/internal/auth"
 	"github.com/cristovaoolegario/tasks-api/internal/domain/dto"
 	"github.com/cristovaoolegario/tasks-api/internal/domain/model"
@@ -99,7 +98,7 @@ func (tc *TaskController) UpdateTaskHandler(ctx *gin.Context) {
 		UserID:        updatedTask.UserID,
 	}
 
-	go tc.notificationService.Notification(fmt.Sprint(userId), convertedTask)
+	go tc.notificationService.Notification(userId, convertedTask)
 	ctx.JSON(http.StatusOK, &convertedTask)
 }
 

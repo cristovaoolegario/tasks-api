@@ -149,7 +149,7 @@ func TestTaskController_UpdateTaskHandler(t *testing.T) {
 			}}
 		mockedService := service.NewTaskService(repo)
 		mockedNotification := service.NewManagerNotificationService("",
-			&kafka.ProducerMock{PublishMessageMock: func(topic, message string) error {
+			&kafka.ProducerMock{PublishMessageMock: func(topic string, message []byte) error {
 				return nil
 			}})
 		taskController := NewTaskController(mockedService, mockAuth, mockedNotification)

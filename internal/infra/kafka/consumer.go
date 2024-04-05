@@ -1,18 +1,16 @@
 package kafka
 
 import (
-	"fmt"
-
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 type ConsumerServiceImp struct {
-	BootstrapServers string //"localhost:9094"
-	GroupId          string //"gostats"
-	AutoOffsetReset  string //"earliest"
+	BootstrapServers string
+	GroupId          string
+	AutoOffsetReset  string
 }
 
-func NewConsumerServiceImp(bootstrapServers, groupId, autoOffsetReset string) *ConsumerServiceImp {
+func NewConsumerServiceImp(bootstrapServers string, groupId string, autoOffsetReset string) *ConsumerServiceImp {
 	return &ConsumerServiceImp{
 		BootstrapServers: bootstrapServers,
 		GroupId:          groupId,
@@ -45,8 +43,8 @@ func (cs *ConsumerServiceImp) Consume(topics []string, msgChan chan *kafka.Messa
 	}
 }
 
-func ProcessEvents(msgChan chan *kafka.Message) {
+func ProcessEvents(msgChan chan *kafka.Message, LogFn func(*kafka.Message)) {
 	for msg := range msgChan {
-		fmt.Println("Received message", string(msg.Value), "on topic", *msg.TopicPartition.Topic)
+		LogFn(msg)
 	}
 }
