@@ -1,0 +1,471 @@
+{
+	"info": {
+		"_postman_id": "1fe2087a-225e-471c-b0d9-0547d1947493",
+		"name": "tasks-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"item": [
+				{
+					"name": "Login manager",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Set token to env\", function () {",
+									"    var jsonData = pm.response.json();",
+									"   pm.environment.set(\"token\", jsonData.token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "newuser",
+									"type": "default"
+								},
+								{
+									"key": "password",
+									"value": "securepassword",
+									"type": "default"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{host}}:{{api_port}}/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{api_port}}",
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login technician",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Set token to env\", function () {",
+									"    var jsonData = pm.response.json();",
+									"   pm.environment.set(\"token\", jsonData.token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "First technician",
+									"type": "default"
+								},
+								{
+									"key": "password",
+									"value": "secure_password",
+									"type": "default"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{host}}:{{api_port}}/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{api_port}}",
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Create User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"Username\": \"First technician\",\n    \"Password\": \"secure_password\",\n    \"Role\": \"technician\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{api_port}}/api/users",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{api_port}}",
+							"path": [
+								"api",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{host}}:{{api_port}}/api/users/First technician",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{api_port}}",
+							"path": [
+								"api",
+								"users",
+								"First technician"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tasks",
+			"item": [
+				{
+					"name": "Create a Task",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"summary\":\"test task\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{api_port}}/api/tasks",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{api_port}}",
+							"path": [
+								"api",
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update task",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"performed_date\": \"2024-01-05T13:59:11.304Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{api_port}}/api/tasks/5",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{api_port}}",
+							"path": [
+								"api",
+								"tasks",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a task",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{api_port}}/api/tasks/1",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{api_port}}",
+							"path": [
+								"api",
+								"tasks",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find tasks",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{host}}:{{api_port}}/api/tasks?page=1&pageSize=5",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{api_port}}",
+							"path": [
+								"api",
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find user tasks by id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{host}}:{{api_port}}/api/tasks/5",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{api_port}}",
+							"path": [
+								"api",
+								"tasks",
+								"5"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Health check",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "default"
+						},
+						{
+							"key": "password",
+							"value": "password",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://{{host}}:{{hc_port}}/ready?full=1",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{hc_port}}",
+					"path": [
+						"ready"
+					],
+					"query": [
+						{
+							"key": "full",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "host",
+			"value": "localhost",
+			"type": "default"
+		},
+		{
+			"key": "api_port",
+			"value": "3000",
+			"type": "default"
+		},
+		{
+			"key": "hc_port",
+			"value": "8086",
+			"type": "default"
+		}
+	]
+}
