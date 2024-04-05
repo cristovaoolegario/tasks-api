@@ -8,4 +8,5 @@ type TaskRepository interface {
 	Delete(taskID uint) error
 	FindByID(taskID uint) (*model.Task, error)
 	FindByUser(userID uint) ([]*model.Task, error)
+	FindAll(page, pageSize int) ([]*model.Task, error)
 }

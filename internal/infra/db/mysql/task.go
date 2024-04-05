@@ -51,3 +51,12 @@ func (repo *TaskRepository) FindByUser(userID uint) ([]*model.Task, error) {
 	}
 	return tasks, nil
 }
+
+// FindAll retrieves all tasks from the database.
+func (repo *TaskRepository) FindAll(page, pageSize int) ([]*model.Task, error) {
+	var tasks []*model.Task
+	if err := repo.db.Offset((page - 1) * pageSize).Limit(pageSize).Find(&tasks).Error; err != nil {
+		return nil, err
+	}
+	return tasks, nil
+}

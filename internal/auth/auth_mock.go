@@ -10,7 +10,7 @@ type MockAuthService struct {
 	GenerateJWTMock              func(user, role, id string) (string, error)
 	LoginMock                    func(username, password string) (string, error)
 	FindByUsernameMock           func(username string) (*model.User, error)
-	ExtractUserIdFromContextMock func(ctx *gin.Context) (uint, error)
+	ExtractUserIdFromContextMock func(ctx *gin.Context) (uint, string, error)
 }
 
 func (m *MockAuthService) GenerateJWT(user, role, id string) (string, error) {
@@ -25,6 +25,6 @@ func (m *MockAuthService) FindByUsername(username string) (*model.User, error) {
 	return m.FindByUsernameMock(username)
 }
 
-func (m *MockAuthService) ExtractUserIdFromContext(ctx *gin.Context) (uint, error) {
+func (m *MockAuthService) ExtractUserFromContext(ctx *gin.Context) (uint, string, error) {
 	return m.ExtractUserIdFromContextMock(ctx)
 }

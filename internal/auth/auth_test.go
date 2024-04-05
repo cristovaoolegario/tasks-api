@@ -84,15 +84,17 @@ func TestServiceImp_ExtractUserIdFromContext(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 
 		expectedUserID := uint(123)
+		role := "test"
 		claims := jwt.MapClaims{
-			"id": strconv.Itoa(int(expectedUserID)),
+			"id":   strconv.Itoa(int(expectedUserID)),
+			"role": role,
 		}
 		c.Set("user_claims", claims)
 
 		secret := "testing-secret"
 		service := NewAuthService(secret, service.NewUserService(&repository.MockUserRepository{}))
 
-		userID, err := service.ExtractUserIdFromContext(c)
+		userID, _, err := service.ExtractUserFromContext(c)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedUserID, userID)
@@ -105,7 +107,7 @@ func TestServiceImp_ExtractUserIdFromContext(t *testing.T) {
 		secret := "testing-secret"
 		service := NewAuthService(secret, service.NewUserService(&repository.MockUserRepository{}))
 
-		userID, err := service.ExtractUserIdFromContext(c)
+		userID, _, err := service.ExtractUserFromContext(c)
 
 		assert.Error(t, err)
 		assert.Equal(t, uint(0), userID)

@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"github.com/cristovaoolegario/tasks-api/internal/domain/model"
+	"sort"
 )
 
 type MockTaskRepository struct {
@@ -65,4 +66,30 @@ func (m *MockTaskRepository) FindByUser(userID uint) ([]*model.Task, error) {
 	}
 
 	return tasks, nil
+}
+
+func (m *MockTaskRepository) FindAll(page, pageSize int) ([]*model.Task, error) {
+	var taskIDs []uint
+	for taskID := range m.Tasks {
+		taskIDs = append(taskIDs, taskID)
+	}
+
+	sort.Slice(taskIDs, func(i, j int) bool {
+		return taskIDs[i] < taskIDs[j]
+	})
+
+	start := (page - 1) * pageSize
+	end := start + pageSize
+
+	if start < 0 || start >= len(taskIDs) || end <= start {
+		return nil, errors.New("invalid pagination parameters")
+	}
+
+	var paginatedTasks []*model.Task
+	for i := start; i < end && i < len(taskIDs); i++ {
+		taskID := taskIDs[i]
+		paginatedTasks = append(paginatedTasks, m.Tasks[taskID])
+	}
+
+	return paginatedTasks, nil
 }

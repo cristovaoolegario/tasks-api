@@ -35,7 +35,7 @@ func (tc *TaskController) CreateTaskHandler(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := tc.authService.ExtractUserIdFromContext(ctx)
+	userId, _, err := tc.authService.ExtractUserFromContext(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{})
 		return
@@ -73,7 +73,7 @@ func (tc *TaskController) UpdateTaskHandler(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := tc.authService.ExtractUserIdFromContext(ctx)
+	userId, _, err := tc.authService.ExtractUserFromContext(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{})
 		return
@@ -142,9 +142,14 @@ func (tc *TaskController) FindByID(ctx *gin.Context) {
 
 // FindByUserID handles GET requests for finding tasks by a user's ID
 func (tc *TaskController) FindByUserID(ctx *gin.Context) {
-	userId, err := tc.authService.ExtractUserIdFromContext(ctx)
+	userId, role, err := tc.authService.ExtractUserFromContext(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{})
+		return
+	}
+
+	if role == string(model.Manager) {
+		tc.GetAllTasksHandler(ctx)
 		return
 	}
 
@@ -154,16 +159,33 @@ func (tc *TaskController) FindByUserID(ctx *gin.Context) {
 		return
 	}
 
-	var convertedTasks []*dto.Task
-	for _, task := range tasks {
-		convertedTasks = append(convertedTasks, &dto.Task{
-			ID:            task.ID,
-			Summary:       task.Summary,
-			PerformedDate: task.PerformedDate,
-			UserID:        task.UserID,
-		})
+	convertedTasks := toDtoTasks(tasks)
+	ctx.JSON(http.StatusOK, convertedTasks)
+}
+
+func (tc *TaskController) GetAllTasksHandler(ctx *gin.Context) {
+	pageStr := ctx.DefaultQuery("page", "1")
+	pageSizeStr := ctx.DefaultQuery("pageSize", "10")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page number"})
+		return
 	}
 
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil || pageSize < 1 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page size"})
+		return
+	}
+
+	tasks, err := tc.taskService.FindPaginatedTasks(page, pageSize)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve tasks"})
+		return
+	}
+
+	convertedTasks := toDtoTasks(tasks)
 	ctx.JSON(http.StatusOK, convertedTasks)
 }
 
@@ -176,4 +198,17 @@ func extractTaskDataToUpdate(oldTask *model.Task, updatedTaskDto dto.Task) *mode
 		updatedTask.PerformedDate = updatedTaskDto.PerformedDate
 	}
 	return updatedTask
+}
+
+func toDtoTasks(tasks []*model.Task) []*dto.Task {
+	var convertedTasks []*dto.Task
+	for _, task := range tasks {
+		convertedTasks = append(convertedTasks, &dto.Task{
+			ID:            task.ID,
+			Summary:       task.Summary,
+			PerformedDate: task.PerformedDate,
+			UserID:        task.UserID,
+		})
+	}
+	return convertedTasks
 }

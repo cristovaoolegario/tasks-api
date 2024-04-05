@@ -13,7 +13,7 @@ import (
 type Service interface {
 	GenerateJWT(user, role, id string) (string, error)
 	Login(username, password string) (string, error)
-	ExtractUserIdFromContext(ctx *gin.Context) (uint, error)
+	ExtractUserFromContext(ctx *gin.Context) (uint, string, error)
 }
 
 // ServiceImp used to authenticate users
@@ -77,21 +77,26 @@ func verifyPassword(hashedPassword, password string) bool {
 	return err == nil
 }
 
-func (s *ServiceImp) ExtractUserIdFromContext(ctx *gin.Context) (uint, error) {
+func (s *ServiceImp) ExtractUserFromContext(ctx *gin.Context) (uint, string, error) {
 	claimsRaw, exists := ctx.Get("user_claims")
 	if !exists {
-		return 0, errors.New("no user id claim")
+		return 0, "", errors.New("no user id claim")
 	}
 
 	claims, ok := claimsRaw.(jwt.MapClaims)
 	if !ok {
-		return 0, errors.New("no user id claim")
+		return 0, "", errors.New("no user id claim")
 	}
-	id, ok := claims["id"].(string)
 
+	id, ok := claims["id"].(string)
 	if !ok {
-		return 0, errors.New("no user id claim")
+		return 0, "", errors.New("no user id claim")
+	}
+
+	role, ok := claims["role"].(string)
+	if !ok {
+		return 0, "", errors.New("no role claim")
 	}
 	userId, _ := strconv.Atoi(id)
-	return uint(userId), nil
+	return uint(userId), role, nil
 }

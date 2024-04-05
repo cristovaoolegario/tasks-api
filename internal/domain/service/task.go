@@ -12,6 +12,7 @@ type TaskService interface {
 	DeleteTask(taskID uint) error
 	FindTaskByID(taskID uint) (*model.Task, error)
 	FindTasksByUser(userID uint) ([]*model.Task, error)
+	FindPaginatedTasks(page, pageSize int) ([]*model.Task, error)
 }
 
 type TaskServiceImp struct {
@@ -54,4 +55,8 @@ func (s *TaskServiceImp) FindTaskByID(taskID uint) (*model.Task, error) {
 
 func (s *TaskServiceImp) FindTasksByUser(userID uint) ([]*model.Task, error) {
 	return s.repository.FindByUser(userID)
+}
+
+func (s *TaskServiceImp) FindPaginatedTasks(page, pageSize int) ([]*model.Task, error) {
+	return s.repository.FindAll(page, pageSize)
 }

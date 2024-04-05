@@ -50,6 +50,18 @@ func TestTaskRepository(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("Should return user's tasks", func(t *testing.T) {
+		tasks, err := repo.FindByUser(1)
+		assert.NoError(t, err)
+		assert.Len(t, tasks, 1)
+	})
+
+	t.Run("Should find all tasks paginated", func(t *testing.T) {
+		tasks, err := repo.FindAll(1, 1)
+		assert.NoError(t, err)
+		assert.Len(t, tasks, 1)
+	})
+
 	t.Run("Should delete exiting task", func(t *testing.T) {
 		err = repo.Delete(1)
 		assert.NoError(t, err)

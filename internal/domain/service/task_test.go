@@ -128,6 +128,31 @@ func TestTaskServiceImp_FindTasks(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, errors.New("no tasks found for user"), err)
 	})
+
+	t.Run("Should return paginated tasks", func(t *testing.T) {
+		repo := repository.NewMockTaskRepository()
+		service := NewTaskService(repo)
+
+		userID := uint(1)
+		task1 := &model.Task{
+			UserID:  userID,
+			Summary: "Task 1",
+		}
+		task2 := &model.Task{
+			UserID:  userID,
+			Summary: "Task 2",
+		}
+
+		repo.Tasks[1] = task1
+		repo.Tasks[2] = task2
+
+		tasks, err := service.FindPaginatedTasks(1, 2)
+
+		assert.NoError(t, err)
+		assert.Len(t, tasks, 2)
+		assert.Contains(t, tasks, task1)
+		assert.Contains(t, tasks, task2)
+	})
 }
 
 func TestTaskServiceImp_DeleteTask(t *testing.T) {
