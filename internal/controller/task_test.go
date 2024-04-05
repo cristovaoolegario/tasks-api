@@ -7,6 +7,7 @@ import (
 	"github.com/cristovaoolegario/tasks-api/internal/domain/dto"
 	"github.com/cristovaoolegario/tasks-api/internal/domain/model"
 	"github.com/cristovaoolegario/tasks-api/internal/domain/service"
+	"github.com/cristovaoolegario/tasks-api/internal/infra/kafka"
 	"github.com/cristovaoolegario/tasks-api/internal/infra/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +28,7 @@ func TestTaskController_CreateTaskHandler(t *testing.T) {
 				return 1, nil
 			}}
 		mockedService := service.NewTaskService(repo)
-		taskController := NewTaskController(mockedService, mockAuth)
+		taskController := NewTaskController(mockedService, mockAuth, nil)
 
 		task := dto.Task{Summary: "Test task", UserID: 1}
 		w := performRequest(taskController.CreateTaskHandler, http.MethodPost, "/users", "", "", task)
@@ -42,7 +43,7 @@ func TestTaskController_CreateTaskHandler(t *testing.T) {
 	})
 
 	t.Run("Should return 400 When Body is malformed", func(t *testing.T) {
-		taskController := NewTaskController(nil, nil)
+		taskController := NewTaskController(nil, nil, nil)
 
 		w := performRequest(taskController.CreateTaskHandler, http.MethodPost, "/users", "", "", nil)
 
@@ -54,7 +55,7 @@ func TestTaskController_CreateTaskHandler(t *testing.T) {
 			ExtractUserIdFromContextMock: func(ctx *gin.Context) (uint, error) {
 				return 0, errors.New("test error")
 			}}
-		taskController := NewTaskController(nil, mockAuth)
+		taskController := NewTaskController(nil, mockAuth, nil)
 
 		task := dto.Task{Summary: "Test task", UserID: 1}
 		w := performRequest(taskController.CreateTaskHandler, http.MethodPost, "/users", "", "", task)
@@ -68,7 +69,7 @@ func TestTaskController_UpdateTaskHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	t.Run("Should return 400 When path id is malformed", func(t *testing.T) {
-		taskController := NewTaskController(nil, nil)
+		taskController := NewTaskController(nil, nil, nil)
 
 		w := performRequest(taskController.UpdateTaskHandler, http.MethodPut, "/users", "", "", nil)
 
@@ -76,7 +77,7 @@ func TestTaskController_UpdateTaskHandler(t *testing.T) {
 	})
 
 	t.Run("Should return 400 When body is malformed", func(t *testing.T) {
-		taskController := NewTaskController(nil, nil)
+		taskController := NewTaskController(nil, nil, nil)
 
 		w := performRequest(taskController.UpdateTaskHandler, http.MethodPut, "/users", "", "1", nil)
 
@@ -86,7 +87,7 @@ func TestTaskController_UpdateTaskHandler(t *testing.T) {
 	t.Run("Should return 400 When id Isn't from an existing task", func(t *testing.T) {
 		repo := repository.NewMockTaskRepository()
 		mockedService := service.NewTaskService(repo)
-		taskController := NewTaskController(mockedService, nil)
+		taskController := NewTaskController(mockedService, nil, nil)
 
 		task := dto.Task{Summary: "Test task", UserID: 1}
 		w := performRequest(taskController.UpdateTaskHandler, http.MethodPut, "/users", "", "1", task)
@@ -104,7 +105,7 @@ func TestTaskController_UpdateTaskHandler(t *testing.T) {
 				return 0, errors.New("test error")
 			}}
 		mockedService := service.NewTaskService(repo)
-		taskController := NewTaskController(mockedService, mockAuth)
+		taskController := NewTaskController(mockedService, mockAuth, nil)
 
 		task := dto.Task{Summary: "Test task", UserID: 1}
 		w := performRequest(taskController.UpdateTaskHandler, http.MethodPut, "/users", "", "1", task)
@@ -125,7 +126,7 @@ func TestTaskController_UpdateTaskHandler(t *testing.T) {
 				return 1, nil
 			}}
 		mockedService := service.NewTaskService(repo)
-		taskController := NewTaskController(mockedService, mockAuth)
+		taskController := NewTaskController(mockedService, mockAuth, nil)
 
 		task := dto.Task{Summary: "Test task", UserID: 1}
 		w := performRequest(taskController.UpdateTaskHandler, http.MethodPut, "/users", "", "1", task)
@@ -147,7 +148,11 @@ func TestTaskController_UpdateTaskHandler(t *testing.T) {
 				return 1, nil
 			}}
 		mockedService := service.NewTaskService(repo)
-		taskController := NewTaskController(mockedService, mockAuth)
+		mockedNotification := service.NewManagerNotificationService("",
+			&kafka.ProducerMock{PublishMessageMock: func(topic, message string) error {
+				return nil
+			}})
+		taskController := NewTaskController(mockedService, mockAuth, mockedNotification)
 
 		performedTime := time.Now()
 		task := dto.Task{Summary: "edited summary", UserID: 1, PerformedDate: &performedTime}
@@ -167,7 +172,7 @@ func TestTaskController_DeleteTaskHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	t.Run("Should return 400 When path id is malformed", func(t *testing.T) {
-		taskController := NewTaskController(nil, nil)
+		taskController := NewTaskController(nil, nil, nil)
 
 		w := performRequest(taskController.DeleteTaskHandler, http.MethodDelete, "/users", "", "", nil)
 
@@ -188,7 +193,7 @@ func TestTaskController_DeleteTaskHandler(t *testing.T) {
 				return 1, nil
 			}}
 		mockedService := service.NewTaskService(repo)
-		taskController := NewTaskController(mockedService, mockAuth)
+		taskController := NewTaskController(mockedService, mockAuth, nil)
 
 		w := performRequest(taskController.DeleteTaskHandler, http.MethodDelete, "/users", "", "1", nil)
 
@@ -201,7 +206,7 @@ func TestTaskController_FindByID(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	t.Run("Should return 400 When path id is malformed", func(t *testing.T) {
-		taskController := NewTaskController(nil, nil)
+		taskController := NewTaskController(nil, nil, nil)
 
 		w := performRequest(taskController.FindByID, http.MethodGet, "/users", "", "", nil)
 
@@ -211,7 +216,7 @@ func TestTaskController_FindByID(t *testing.T) {
 	t.Run("Should return 404 When id Isn't from an existing task", func(t *testing.T) {
 		repo := repository.NewMockTaskRepository()
 		mockedService := service.NewTaskService(repo)
-		taskController := NewTaskController(mockedService, nil)
+		taskController := NewTaskController(mockedService, nil, nil)
 
 		w := performRequest(taskController.FindByID, http.MethodGet, "/users", "", "1", nil)
 
@@ -228,7 +233,7 @@ func TestTaskController_FindByID(t *testing.T) {
 				return 0, errors.New("test error")
 			}}
 		mockedService := service.NewTaskService(repo)
-		taskController := NewTaskController(mockedService, mockAuth)
+		taskController := NewTaskController(mockedService, mockAuth, nil)
 
 		w := performRequest(taskController.FindByID, http.MethodGet, "/users", "", "1", nil)
 
@@ -248,7 +253,7 @@ func TestTaskController_FindByID(t *testing.T) {
 				return 1, nil
 			}}
 		mockedService := service.NewTaskService(repo)
-		taskController := NewTaskController(mockedService, mockAuth)
+		taskController := NewTaskController(mockedService, mockAuth, nil)
 
 		w := performRequest(taskController.FindByID, http.MethodGet, "/users", "", "1", nil)
 
@@ -269,7 +274,7 @@ func TestTaskController_FindByID(t *testing.T) {
 				return 1, nil
 			}}
 		mockedService := service.NewTaskService(repo)
-		taskController := NewTaskController(mockedService, mockAuth)
+		taskController := NewTaskController(mockedService, mockAuth, nil)
 
 		w := performRequest(taskController.FindByID, http.MethodGet, "/users", "", "1", nil)
 
@@ -292,7 +297,7 @@ func TestTaskController_FindByUserID(t *testing.T) {
 			ExtractUserIdFromContextMock: func(ctx *gin.Context) (uint, error) {
 				return 0, errors.New("test error")
 			}}
-		taskController := NewTaskController(nil, mockAuth)
+		taskController := NewTaskController(nil, mockAuth, nil)
 
 		w := performRequest(taskController.FindByUserID, http.MethodGet, "/users", "", "", nil)
 
@@ -306,7 +311,7 @@ func TestTaskController_FindByUserID(t *testing.T) {
 			ExtractUserIdFromContextMock: func(ctx *gin.Context) (uint, error) {
 				return 1, nil
 			}}
-		taskController := NewTaskController(mockedService, mockAuth)
+		taskController := NewTaskController(mockedService, mockAuth, nil)
 
 		w := performRequest(taskController.FindByUserID, http.MethodGet, "/users", "", "", nil)
 
@@ -327,7 +332,7 @@ func TestTaskController_FindByUserID(t *testing.T) {
 				return 1, nil
 			}}
 		mockedService := service.NewTaskService(repo)
-		taskController := NewTaskController(mockedService, mockAuth)
+		taskController := NewTaskController(mockedService, mockAuth, nil)
 
 		w := performRequest(taskController.FindByUserID, http.MethodGet, "/users", "", "", nil)
 

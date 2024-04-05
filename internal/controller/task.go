@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/cristovaoolegario/tasks-api/internal/auth"
 	"github.com/cristovaoolegario/tasks-api/internal/domain/dto"
 	"github.com/cristovaoolegario/tasks-api/internal/domain/model"
@@ -13,15 +14,17 @@ import (
 
 // TaskController handles HTTP requests related to tasks.
 type TaskController struct {
-	taskService service.TaskService
-	authService auth.Service
+	taskService         service.TaskService
+	authService         auth.Service
+	notificationService service.ManagerNotificationService
 }
 
 // NewTaskController creates a new instance of TaskController.
-func NewTaskController(taskService service.TaskService, authService auth.Service) *TaskController {
+func NewTaskController(taskService service.TaskService, authService auth.Service, notificationService service.ManagerNotificationService) *TaskController {
 	return &TaskController{
-		taskService: taskService,
-		authService: authService,
+		taskService:         taskService,
+		authService:         authService,
+		notificationService: notificationService,
 	}
 }
 
@@ -89,12 +92,15 @@ func (tc *TaskController) UpdateTaskHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, &dto.Task{
+	convertedTask := &dto.Task{
 		ID:            updatedTask.ID,
 		Summary:       updatedTask.Summary,
 		PerformedDate: updatedTask.PerformedDate,
 		UserID:        updatedTask.UserID,
-	})
+	}
+
+	go tc.notificationService.Notification(fmt.Sprint(userId), convertedTask)
+	ctx.JSON(http.StatusOK, &convertedTask)
 }
 
 // DeleteTaskHandler handles the deletion of a task.

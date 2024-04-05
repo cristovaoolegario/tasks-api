@@ -6,7 +6,8 @@ import (
 	"github.com/cristovaoolegario/tasks-api/internal/controller"
 	"github.com/cristovaoolegario/tasks-api/internal/domain/model"
 	"github.com/cristovaoolegario/tasks-api/internal/domain/service"
-	mysql "github.com/cristovaoolegario/tasks-api/internal/infra/db/mysql"
+	"github.com/cristovaoolegario/tasks-api/internal/infra/db/mysql"
+	"github.com/cristovaoolegario/tasks-api/internal/infra/kafka"
 	"github.com/gin-gonic/gin"
 	"github.com/heptiolabs/healthcheck"
 	"net/http"
@@ -31,10 +32,12 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	taskService := service.NewTaskService(taskRepo)
 	authService := auth.NewAuthService(cfg.AuthSecret, userService)
+	producer := kafka.NewProducerServiceImp("localhost:9092")
+	managerNotificationService := service.NewManagerNotificationService("managerNotification", producer)
 
 	loginController := controller.NewLoginController(authService)
 	userController := controller.NewUserController(userService)
-	taskController := controller.NewTaskController(taskService, authService)
+	taskController := controller.NewTaskController(taskService, authService, managerNotificationService)
 
 	CreateDefaultUserIfNotExists(userRepo)
 
