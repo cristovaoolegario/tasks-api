@@ -1,0 +1,327 @@
+definitions:
+  dto.Task:
+    properties:
+      id:
+        example: 1
+        type: integer
+      performed_date:
+        example: "2024-04-10T12:00:00Z"
+        type: string
+      summary:
+        example: Task summary
+        type: string
+      user_id:
+        example: 1
+        type: integer
+    type: object
+  dto.User:
+    properties:
+      id:
+        example: 1
+        type: integer
+      password:
+        example: secure_password
+        type: string
+      role:
+        example: technician
+        type: string
+      username:
+        example: Joe the technician
+        type: string
+    type: object
+info:
+  contact:
+    email: cristovaoolegario@gmail.com
+    name: API Support
+  description: This is a sample api for managing technicians tasks
+  title: Tasks API
+  version: "1.0"
+paths:
+  /api/tasks:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all tasks with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of tasks
+          schema:
+            items:
+              $ref: '#/definitions/dto.Task'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - JWT: []
+      summary: Get all tasks with pagination
+      tags:
+      - task
+    post:
+      consumes:
+      - application/json
+      description: Add a new task for the authenticated user
+      parameters:
+      - description: Create Task
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Task'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.Task'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - JWT: []
+      summary: Create a new task
+      tags:
+      - task
+  /api/tasks/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a task for the authenticated user
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Task deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - JWT: []
+      summary: Delete a task
+      tags:
+      - task
+    get:
+      consumes:
+      - application/json
+      description: Get a task by its ID for the authenticated user
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Task found
+          schema:
+            $ref: '#/definitions/dto.Task'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - JWT: []
+      summary: Get a task by ID
+      tags:
+      - task
+    put:
+      consumes:
+      - application/json
+      description: Update task details for the authenticated user
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Task
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Task'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - JWT: []
+      summary: Update an existing task
+      tags:
+      - task
+  /api/users:
+    post:
+      consumes:
+      - application/json
+      description: Add a new user to the system
+      parameters:
+      - description: User to create
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.User'
+        "400":
+          description: Input validation error
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - JWT: []
+      summary: Create a new user
+      tags:
+      - user
+  /api/users/{username}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve user details by username
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.User'
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - JWT: []
+      summary: Get a user by username
+      tags:
+      - user
+  /login:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Perform a user login
+      parameters:
+      - description: Username
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: Password
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User login
+      tags:
+      - authentication
+securityDefinitions:
+  token:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

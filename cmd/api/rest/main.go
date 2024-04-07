@@ -1,6 +1,18 @@
+// @title Tasks API
+// @version 1.0
+// @description This is a sample api for managing technicians tasks
+
+// @contact.name API Support
+// @contact.email cristovaoolegario@gmail.com
+
+// @securityDefinitions.apiKey token
+// @in header
+// @name Authorization
+// @Security JWT
 package main
 
 import (
+	"database/sql"
 	"github.com/cristovaoolegario/tasks-api/internal/auth"
 	"github.com/cristovaoolegario/tasks-api/internal/config"
 	"github.com/cristovaoolegario/tasks-api/internal/controller"
@@ -10,8 +22,12 @@ import (
 	"github.com/cristovaoolegario/tasks-api/internal/infra/kafka"
 	"github.com/gin-gonic/gin"
 	"github.com/heptiolabs/healthcheck"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"net/http"
 	"time"
+
+	_ "github.com/cristovaoolegario/tasks-api/docs"
 )
 
 func main() {
@@ -41,9 +57,19 @@ func main() {
 
 	CreateDefaultUserIfNotExists(userRepo)
 
+	router := setupRoutes(loginController, cfg, userController, taskController, db)
+
+	router.Run(cfg.AppPort)
+}
+
+func setupRoutes(loginController *controller.LoginController,
+	cfg *config.Config,
+	userController *controller.UserController,
+	taskController *controller.TaskController,
+	db *sql.DB) *gin.Engine {
 	router := gin.Default()
 
-	router.GET("/login", loginController.LoginHandler)
+	router.POST("/login", loginController.LoginHandler)
 
 	userRoutes := router.Group("/api/users",
 		auth.TokenAuthMiddleware(cfg.AuthSecret),
@@ -68,7 +94,11 @@ func main() {
 	health.AddReadinessCheck("database", healthcheck.DatabasePingCheck(db, 1*time.Second))
 	go http.ListenAndServe(cfg.HealthCheckPort, health)
 
-	router.Run(cfg.AppPort)
+	router.GET("/swagger", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+	})
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	return router
 }
 
 func CreateDefaultUserIfNotExists(userRepo *mysql.UserRepository) {

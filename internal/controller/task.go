@@ -28,6 +28,20 @@ func NewTaskController(taskService service.TaskService, authService auth.Service
 }
 
 // CreateTaskHandler handles the creation of a new task.
+// @Summary Create a new task
+// @Description Add a new task for the authenticated user
+// @Tags task
+// @Accept json
+// @Produce json
+// @Param task body dto.Task true "Create Task"
+// @Success 201 {object} dto.Task
+// @Failure 400 {object} map[string]interface{} "Bad Request"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /api/tasks [post]
+// @securityDefinitions.apiKey token
+// @in header
+// @name Authorization
+// @Security JWT
 func (tc *TaskController) CreateTaskHandler(ctx *gin.Context) {
 	var task dto.Task
 	if err := ctx.ShouldBindJSON(&task); err != nil {
@@ -54,6 +68,22 @@ func (tc *TaskController) CreateTaskHandler(ctx *gin.Context) {
 }
 
 // UpdateTaskHandler handles the update of an existing task.
+// @Summary Update an existing task
+// @Description Update task details for the authenticated user
+// @Tags task
+// @Accept json
+// @Produce json
+// @Param id path int true "Task ID"
+// @Param task body dto.Task true "Update Task"
+// @Success 200 {object} dto.Task
+// @Failure 400 {object} map[string]interface{} "Bad Request"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /api/tasks/{id} [put]
+// @securityDefinitions.apiKey token
+// @in header
+// @name Authorization
+// @Security JWT
 func (tc *TaskController) UpdateTaskHandler(ctx *gin.Context) {
 	taskID, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
@@ -103,6 +133,20 @@ func (tc *TaskController) UpdateTaskHandler(ctx *gin.Context) {
 }
 
 // DeleteTaskHandler handles the deletion of a task.
+// @Summary Delete a task
+// @Description Delete a task for the authenticated user
+// @Tags task
+// @Accept json
+// @Produce json
+// @Param id path int true "Task ID"
+// @Success 200 {object} map[string]string "Task deleted successfully"
+// @Failure 400 {object} map[string]interface{} "Bad Request"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /api/tasks/{id} [delete]
+// @securityDefinitions.apiKey token
+// @in header
+// @name Authorization
+// @Security JWT
 func (tc *TaskController) DeleteTaskHandler(ctx *gin.Context) {
 	taskID, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
@@ -141,6 +185,21 @@ func (tc *TaskController) FindByID(ctx *gin.Context) {
 }
 
 // FindByUserID handles GET requests for finding tasks by a user's ID
+// @Summary Get a task by ID
+// @Description Get a task by its ID for the authenticated user
+// @Tags task
+// @Accept json
+// @Produce json
+// @Param id path int true "Task ID"
+// @Success 200 {object} dto.Task "Task found"
+// @Failure 400 {object} map[string]interface{} "Bad Request"
+// @Failure 404 {object} map[string]interface{} "Not Found"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /api/tasks/{id} [get]
+// @securityDefinitions.apiKey token
+// @in header
+// @name Authorization
+// @Security JWT
 func (tc *TaskController) FindByUserID(ctx *gin.Context) {
 	userId, role, err := tc.authService.ExtractUserFromContext(ctx)
 	if err != nil {
@@ -163,6 +222,22 @@ func (tc *TaskController) FindByUserID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, convertedTasks)
 }
 
+// GetAllTasksHandler godoc
+// @Summary Get all tasks with pagination
+// @Description Retrieve all tasks with pagination
+// @Tags task
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param pageSize query int false "Page size" default(10)
+// @Success 200 {array} dto.Task "List of tasks"
+// @Failure 400 {object} map[string]interface{} "Bad Request"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /api/tasks [get]
+// @securityDefinitions.apiKey token
+// @in header
+// @name Authorization
+// @Security JWT
 func (tc *TaskController) GetAllTasksHandler(ctx *gin.Context) {
 	pageStr := ctx.DefaultQuery("page", "1")
 	pageSizeStr := ctx.DefaultQuery("pageSize", "10")

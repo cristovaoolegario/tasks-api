@@ -6,10 +6,10 @@ import (
 )
 
 type Task struct {
-	ID            uint       `json:"id"`
-	Summary       string     `json:"summary"`
-	PerformedDate *time.Time `json:"performed_date"`
-	UserID        uint       `json:"user_id"`
+	ID            uint       `json:"id" example:"1"`
+	Summary       string     `json:"summary" example:"Task summary"`
+	PerformedDate *time.Time `json:"performed_date" example:"2024-04-10T12:00:00Z"`
+	UserID        uint       `json:"user_id" example:"1"`
 }
 
 func (t *Task) ToModel() *model.Task {

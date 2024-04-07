@@ -9,6 +9,7 @@ RUN go mod download
 # Copy source code
 COPY cmd ./cmd
 COPY internal ./internal
+COPY docs ./docs
 
 RUN go build -tags musl -o microservice ./cmd/api/rest/main.go
 
